@@ -36,14 +36,14 @@ exports.login = (req,res,next) => {
           return next(authError);
         }
         if (!user) {
-          return res.redirect(`/?error=${info.message}`);
+          return res.send("유저가 없습니다.");
         }
         return req.login(user, (loginError) => {
           if (loginError) {
             console.error(loginError);
             return next(loginError);
           }
-          return res.redirect('/');
+          return res.send("로그인 성공");
         });
       })(req, res, next);
 } 

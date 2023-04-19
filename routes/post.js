@@ -2,7 +2,7 @@ const express = require('express')
 const multer = require('multer')
 const fs = require('fs')
 const path = require('path')
-const {afterUploadImage,uploadPost} = require('../controllers/post')
+const {afterUploadImage,uploadPost, updatePost,deletePost,readPostByNick} = require('../controllers/post')
 const {isLoggedIn} = require('../middelwares')
 
 const router = express.Router()
@@ -33,5 +33,11 @@ router.post('/img', isLoggedIn, upload.single('img'),afterUploadImage)
 
 const upload2 = multer()
 router.post('/', isLoggedIn, upload2.none(), uploadPost)
+
+router.post('/:id/update', isLoggedIn,updatePost )
+
+router.delete('/:id/delete', isLoggedIn,deletePost )
+
+router.get('/:nick',readPostByNick)
 
 module.exports = router

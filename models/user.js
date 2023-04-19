@@ -49,6 +49,8 @@ class User extends Sequelize.Model{
             as: 'Followings',
             through: 'Follow',
           });
+
+        db.User.belongsToMany(db.Post, {through: 'Like', as :'PostLike'})
     }
 }
 

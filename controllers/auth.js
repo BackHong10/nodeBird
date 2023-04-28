@@ -43,7 +43,7 @@ exports.login = (req,res,next) => {
             console.error(loginError);
             return next(loginError);
           }
-          return res.send("로그인 성공");
+          return res.redirect('/');
         });
       })(req, res, next);
 } 

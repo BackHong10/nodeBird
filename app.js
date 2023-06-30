@@ -7,6 +7,8 @@ const nunjucks = require('nunjucks')
 const dotenv = require('dotenv')
 const {sequelize} = require('./models')
 const passport = require('passport')
+const helmet = require("helmet")
+const hpp = require("hpp")
 
 
 dotenv.config()
@@ -30,21 +32,40 @@ sequelize.sync().then(() => {
     console.log("데이터 베이스 연결에 성공하였습니다.")
 })
 
-app.use(morgan('dev'))
+if(process.env.NODE_ENV === 'production'){
+    app.enable("trust proxy")
+    app.use(morgan('combined'))
+    app.use(helmet({
+        contentSecurityPolicy: false,
+        crossOriginEmbedderPolicy: false,
+        crossOriginResourcePolicy: false,
+    }))
+    app.use(hpp())
+}
+else{
+    app.use(morgan('dev'))
+}
 app.use(express.static(path.join(__dirname,'public')))
 app.use('/img', express.static(path.join(__dirname, 'uploads')));
 app.use(express.json())
 app.use(express.urlencoded())
 app.use(cookieParser(process.env.COOKIE_SECRET))
-app.use(session({
+const sessionOption = {
     resave: false,
     saveUninitialized: false,
     secret: process.env.COOKIE_SECRET,
     cookie: {
-        httpOnly: true,
-        secure: false
-    }
-}))
+      httpOnly: true,
+      secure: false,
+    },
+    // store: new RedisStore({ client: redisClient }),
+};
+
+if(process.env.NODE_ENV === 'production'){
+    sessionOption.proxy = true
+    sessionOption.cookie.secure = true
+}
+app.use(session(sessionOption))
 app.use(passport.initialize())
 app.use(passport.session())
 

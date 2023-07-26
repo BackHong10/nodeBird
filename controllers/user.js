@@ -68,7 +68,7 @@ exports.updateProfile = async (req,res,next) => {
     })
 
     res.send("프로필 수정 성공")
-
+    
 
   } catch (error) {
     console.error(error)

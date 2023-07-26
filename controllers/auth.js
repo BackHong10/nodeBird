@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt')
 const passport = require('passport')
 const User = require('../models/user')
+const jwt = require('jsonwebtoken')
 
 
 exports.join = async (req,res,next) => {
@@ -53,3 +54,34 @@ exports.logout = (req,res,next) => {
         res.redirect('/');
       });
 } 
+
+
+exports.loginToken = async (req,res,next) => {
+  const {email, password} = req.body
+
+  const exUser = await User.findOne({
+    where : {
+      email: email
+    }
+  })
+
+  if(!exUser){
+    return res.send("존재하지 않는 이메일입니다.")
+  }
+
+  const accessToken = jwt.sign({
+    email: exUser.email, sub: exUser.id},
+  {secret: process.env.accessTokenSecret, expiresIn: '1h'}
+  )
+
+  const refreshToken = jwt.sign({
+    email: exUser.email, sub: exUser.id},
+  {secret: process.env.refreshTokenSecret, expiresIn: '2w'}
+  )
+
+  res.setHeader('Set-Cookie', `refreshToken= ${refreshToken}`)
+  return res.json({
+    msg: "로그인 성공",
+    accesstoken: accessToken
+  })
+}

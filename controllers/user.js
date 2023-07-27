@@ -1,17 +1,20 @@
 const User = require('../models/user')
+const {Follow} = require('../services/user')
 const bcrypt = require('bcrypt')
-const {sequelize} = require('../models');
 const Post = require('../models/post');
+
 
 exports.follow = async (req,res,next) => {
     try {
-        const user = await User.findOne({ where: { id: req.user.id } });
-        if (user) { // req.user.id가 followerId, req.params.id가 followingId
-          await user.addFollowing(parseInt(req.params.id, 10));
-          res.send('success');
-        } else {
-          res.status(404).send('no user');
+        const result = await Follow(req.user.id, req.params.id)
+
+        if(result === 'no user'){
+          res.send('no user')
         }
+        else{
+          res.send('success')
+        }
+        
       } catch (error) {
         console.error(error);
         next(error);

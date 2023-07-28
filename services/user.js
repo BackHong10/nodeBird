@@ -3,14 +3,16 @@ const Post = require('../models/post')
 const bcrypt = require('bcrypt')
 
 exports.Follow = async (userId, followId) => {
+    console.log(followId)
     const user = await User.findOne({
         where: {
             id: userId
         }
     })
+    console.log(user)
 
     if(user){
-        await user.addFollowing(parseInt(followId,10))
+        await user.addFollowings(parseInt(followId,10))
         return 'success'
     }
     else{
@@ -34,8 +36,8 @@ exports.unFollow = async (userId, followId) => {
     }).catch((error) => {
         result = 'error'
     })
-
     return result
+    
 }
 
 exports.updateProfile = async (updateInput,userId) => {

@@ -1,32 +1,25 @@
-const bcrypt = require('bcrypt')
+const {join,getAccessToken} = require('../services/auth')
 const passport = require('passport')
-const User = require('../models/user')
-const jwt = require('jsonwebtoken')
+
 
 
 exports.join = async (req,res,next) => {
     const {email, password, nick} = req.body
 
     try {
-        const exUser = await User.findOne({where:{email}})
+        const result = await join(req.body)
 
-        if(exUser) {
+        if(result === 'exUser') {
             return res.redirect('/join?error=exist');
         }
+        else if(result === 'success'){
+          return res.redirect('/')
+        }
 
-        const hash = await bcrypt.hash(password,12)
-
-        await User.create({
-            email,
-            nick,
-            password : hash
-        })
-
-        return res.redirect('/')
     } catch (error) {
 
         console.error(error);
-    return next(error);
+        return next(error);
     }
 } 
 
@@ -57,31 +50,17 @@ exports.logout = (req,res,next) => {
 
 
 exports.loginToken = async (req,res,next) => {
-  const {email, password} = req.body
+  const result = await getAccessToken(req.body.email, req.body.password, res)
 
-  const exUser = await User.findOne({
-    where : {
-      email: email
-    }
-  })
-
-  if(!exUser){
-    return res.send("존재하지 않는 이메일입니다.")
+  if(result === 'no user'){
+    res.send('no user')
+  }
+  else if(result === 'different password'){
+    res.send('different password')
   }
 
-  const accessToken = jwt.sign({
-    email: exUser.email, sub: exUser.id},
-  {secret: process.env.accessTokenSecret, expiresIn: '1h'}
-  )
-
-  const refreshToken = jwt.sign({
-    email: exUser.email, sub: exUser.id},
-  {secret: process.env.refreshTokenSecret, expiresIn: '2w'}
-  )
-
-  res.setHeader('Set-Cookie', `refreshToken= ${refreshToken}`)
   return res.json({
     msg: "로그인 성공",
-    accesstoken: accessToken
+    accessToken: result
   })
 }

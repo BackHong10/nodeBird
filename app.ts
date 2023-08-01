@@ -1,23 +1,23 @@
-const express = require('express')
-const cookieParser = require('cookie-parser')
-const morgan = require('morgan')
-const path = require('path')
-const session = require('express-session')
-const nunjucks = require('nunjucks')
-const dotenv = require('dotenv')
-const {sequelize} = require('./models')
-const passport = require('passport')
-const helmet = require("helmet")
-const hpp = require("hpp")
+import express, { ErrorRequestHandler, RequestHandler } from 'express'
+import cookieParser from 'cookie-parser'
+import morgan from 'morgan'
+import path from 'path'
+import session from 'express-session'
+import nunjucks from 'nunjucks'
+import dotenv from 'dotenv'
+import { sequelize } from './models'
+import passport from 'passport'
+import helmet from "helmet"
+import hpp from "hpp"
 
 
 dotenv.config()
 
-const pageRouter = require('./routes/page')
-const authRouter = require('./routes/auth')
-const postRouter = require('./routes/post')
-const userRouter = require('./routes/user')
-const passportConfig = require('./passport')
+import pageRouter from './routes/page'
+import authRouter from './routes/auth'
+import postRouter from './routes/post'
+import userRouter from './routes/user'
+import passportConfig from './passport'
 
 const app = express()
 passportConfig()
@@ -53,11 +53,13 @@ app.use(cookieParser(process.env.COOKIE_SECRET))
 const sessionOption = {
     resave: false,
     saveUninitialized: false,
-    secret: process.env.COOKIE_SECRET,
+    secret: process.env.COOKIE_SECRET!,
     cookie: {
       httpOnly: true,
       secure: false,
     },
+    proxy:false,
+    
     // store: new RedisStore({ client: redisClient }),
 };
 
@@ -80,12 +82,14 @@ app.use((req,res,next) => {
     next(error)
 })
 
-app.use((err,req,res,next) => {
+const errorHandler: ErrorRequestHandler = (err,req,res,next) => {
     res.locals.message = err.message
     res.locals.error = process.env.NODE_ENV !== 'production' ? err : {}
     res.status(err.status || 500)
     res.render('error')
-})
+}
+
+app.use(errorHandler)
 
 app.listen(app.get('port'), () => {
     console.log("서버가 실행되었습니다.")

@@ -1,11 +1,10 @@
-const passport = require('passport');
-const KakaoStrategy = require('passport-kakao').Strategy;
+import passport from 'passport';
+import { Strategy as KakaoStrategy } from 'passport-kakao';
+import User from '../models/user';
 
-const User = require('../models/user');
-
-module.exports = () => {
+export default () => {
   passport.use(new KakaoStrategy({
-    clientID: process.env.KAKAO_ID,
+    clientID: process.env.KAKAO_ID!,
     clientSecret: process.env.KAKAO_SECRET,
     callbackURL: '/auth/kakao/callback',
   }, async (accessToken, refreshToken, profile, done) => {
